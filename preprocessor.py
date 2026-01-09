@@ -6,6 +6,11 @@ import yaml
 
 import torch
 
+import sys
+#from pathlib import Path
+#sys.path.append(str(Path.cwd()))
+to_remove = {"/export/home/tbaudier/Software/syd_algo", "/export/home/tbaudier/clbwiki/code/patientIdEncryption"}
+sys.path = [p for p in sys.path if p not in to_remove]
 import utils.io as io
 import utils.recon as recon
 import utils.scatter_corrector as sc

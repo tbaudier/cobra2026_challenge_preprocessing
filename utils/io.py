@@ -14,6 +14,7 @@ from itk import RTK as rtk
 import fnmatch
 import utils.xim_reader as xim
 import xdrt.xdr_reader as xdr_reader
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +22,17 @@ def read_projections_elekta(projections_path: str, lineint: bool =True) -> sitk.
     """
     Read a projection set from the specified directory
     """
-    filenames = sorted(fnmatch.filter(os.listdir(projections_path), "*.his"))
-    filenames = [os.path.join(projections_path, f) for f in filenames]
+
+    archive_path = Path(projections_path) / "his.tar.bz2"
+    dst_dir = Path("/export/home/tbaudier/simon/tmp_his/")
+    if dst_dir.exists():
+        shutil.rmtree(dst_dir)
+    dst_dir.mkdir(parents=True, exist_ok=False)
+    cmd = ["tar", "-xjf", str(archive_path), "-C", str(dst_dir), "--no-same-owner"]
+    result = subprocess.run(cmd, check=False, capture_output=True, text=True)
+
+    filenames = sorted(fnmatch.filter(os.listdir(dst_dir), "*.his"))
+    filenames = [os.path.join(dst_dir, f) for f in filenames]
     logger.info(f"Found {len(filenames)} projection files in {projections_path}")
 
     OutputPixelType = itk.F
