@@ -1,18 +1,13 @@
-#Docker for opengate_core
-#systemctl start docker
-#login: docker login
-#build: docker build -t tbaudier/cobra2026_challenge_preprocessing -f Dockerfile.
-#push: docker push tbaudier/cobra2026_challenge_preprocessing
-#run: docker run --rm -v $PWD:/home tbaudier/cobra2026_challenge_preprocessing /home/.github/workflows/run_test_opengate_castor.sh
-#interactive: docker run -ti --rm -v $PWD:/home quay.io/pypa/manylinux_2_34_x86_64 /bin/bash
+# Use the official NVIDIA CUDA image as the base image
+FROM nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04
 
-FROM quay.io/pypa/manylinux_2_34_x86_64
-MAINTAINER Thomas Baudier <thomas.baudier@creatis.insa-lyon.fr>
-#Install packages
-RUN     yum install -y gcc wget git expat-devel fftw-devel qt6-qtbase-devel freeglut-devel libXmu-devel xerces-c-devel libXpm-devel libXft-devel xrootd-devel openssl-devel libuuid-devel \
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
+RUN apt update
+RUN apt install python3 python3-pip -y
+RUN apt install cmake -y
+COPY docker/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-#Create folder
-    && cd /home/docker \
-    && /opt/python/cp312-cp312/bin/pip install torch --index-url https://download.pytorch.org/whl/cpu \
-    && /opt/python/cp312-cp312/bin/pip install --no-cache-dir -r requirements.txt
-
+WORKDIR /workspace
+COPY . .
+CMD ["bash"]

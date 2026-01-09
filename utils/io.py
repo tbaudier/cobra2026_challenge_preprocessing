@@ -15,6 +15,7 @@ import fnmatch
 import utils.xim_reader as xim
 import xdrt.xdr_reader as xdr_reader
 from pathlib import Path
+import subprocess
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,7 @@ def read_projections_elekta(projections_path: str, lineint: bool =True) -> sitk.
     """
 
     archive_path = Path(projections_path) / "his.tar.bz2"
-    dst_dir = Path("/export/home/tbaudier/simon/tmp_his/")
+    dst_dir = Path("/home/tmp_his/")
     if dst_dir.exists():
         shutil.rmtree(dst_dir)
     dst_dir.mkdir(parents=True, exist_ok=False)

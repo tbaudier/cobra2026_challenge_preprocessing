@@ -8,7 +8,7 @@ with open("/export/home/tbaudier/simon/extractPatientXvi/good_patient.txt", "r")
     for line in f:
         patients += [line[:-1]]
 
-output_data_dir = "/export/home/tbaudier/simon/extractPatientXvi/data/"
+output_data_dir = "/home/data/"
 config_yaml = '/export/home/tbaudier/simon/extractPatientXvi/cobra2026_challenge_preprocessing/configs/clb_config.yaml'
 
 if os.path.exists(config_yaml):
