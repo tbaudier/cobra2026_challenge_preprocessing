@@ -15,5 +15,6 @@ RUN     yum install -y gcc wget git expat-devel fftw-devel qt6-qtbase-devel free
     && cd /home/docker \
     && /opt/python/cp312-cp312/bin/pip install torch --index-url https://download.pytorch.org/whl/cpu \
     && /opt/python/cp312-cp312/bin/pip install --no-cache-dir -r requirements.txt \
+    && cd .. \
     && /opt/python/cp312-cp312/bin/python run_preprocessing.py -c ./configs/clb_config.yaml -d 'cpu' -s 1
 
