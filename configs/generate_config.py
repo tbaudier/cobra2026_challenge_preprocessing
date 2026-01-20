@@ -16,7 +16,7 @@ if os.path.exists(config_yaml):
 
 id_patient = 0
 for patient in patients:
-
+    print(patient)
     #get and sort cbct
     cbct_series = glob.glob(patient + "/IMAGES/img_*")
     cbct_series_sorted = {}
@@ -36,45 +36,55 @@ for patient in patients:
                     break
               except:
                 continue
-    cbct_series_sorted_list = sorted(cbct_series_sorted, key=lambda item:item[1])
-    filepath = cbct_series_sorted_list[0]
+    cbct_series_sorted_list = sorted(cbct_series_sorted.items(), key=lambda item: item[1])
 
     #get the first cbct containing all necessary infos from INI file
     found_cbct = False
     cbct_index = 0
     ct_ReferenceUID = ""
     while (not found_cbct) and (cbct_index < len(cbct_series_sorted_list)):
-        filepath = cbct_series_sorted_list[cbct_index]
+        filepath = cbct_series_sorted_list[cbct_index][0]
         ini_files = glob.glob(filepath + "/**/*.INI*", recursive=True)
         if len(ini_files) == 0:
             print(filepath + " no INI file found")
             break
         dict_cbct = { 
             "ct_ReferenceUID": False,
-            "OnlineToRefTransformCorrection": False
+            "OnlineToRefTransformCorrection": False,
+            "Frames": False
         }
         for ini_file in ini_files:
             with open(ini_file, 'r', encoding='utf-8') as f:
                 try:
                     for line in f:
                         if line.startswith("ReferenceUID="):
-                            dict_cbct["ct_ReferenceUID"] = True
-                            ct_ReferenceUID = line.split("=")[1][:-1]
+                            tmp = line.split("=")[1][:-1]
+                            if os.path.isdir(filepath + "/../../CT_SET/" + tmp):
+                                dict_cbct["ct_ReferenceUID"] = True
+                                ct_ReferenceUID = tmp
                         if line.startswith("OnlineToRefTransformCorrection="):
                             dict_cbct["OnlineToRefTransformCorrection"] = True
 
                 except:
                     continue
+        frames_files = glob.glob(filepath + "/_Frames.xm*", recursive=False)
+        for frame_file in frames_files:
+            with open(frame_file, 'r', encoding='utf-8') as f:
+                for line in f:
+                    if "</Frames>" in line:
+                        dict_cbct["Frames"] = True
+
         if not all(dict_cbct.values()):
             cbct_index += 1
         else:
             found_cbct = True
 
-    if cbct_index == cbct_series_sorted_list:
+    if cbct_index == len(cbct_series_sorted_list):
         print("not found all INI infos")
+        continue
 
     #get the right cbct path and projection path
-    filepath = cbct_series_sorted_list[cbct_index]
+    filepath = cbct_series_sorted_list[cbct_index][0]
     cbct_filename = glob.glob(filepath + "/**/*.SCAN", recursive=True)[0]
     projections_path = os.path.dirname(os.path.dirname(cbct_filename))
 
@@ -103,7 +113,7 @@ for patient in patients:
             'data': {
                 'projections': projections_path,
                 'clinical_recon': cbct_filename,
-                'ct': ct_images[0],
+                'ct': os.path.dirname(ct_images[0]),
                 'output': os.path.join(output_data_dir, id, 'output'),
                 'framesxml': frames_file,
                 'reconstruction_dir': os.path.dirname(cbct_filename),
