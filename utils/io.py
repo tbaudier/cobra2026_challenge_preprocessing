@@ -16,7 +16,7 @@ import utils.xim_reader as xim
 import xdrt.xdr_reader as xdr_reader
 from pathlib import Path
 import subprocess
-
+import gatetools as gt
 logger = logging.getLogger(__name__)
 
 def read_projections_elekta(projections_path: str, lineint: bool =True) -> sitk.Image:
@@ -25,7 +25,7 @@ def read_projections_elekta(projections_path: str, lineint: bool =True) -> sitk.
     """
 
     archive_path = Path(projections_path) / "his.tar.bz2"
-    dst_dir = Path("/home/tmp_his/")
+    dst_dir = Path("/export/home/roo/thomas/tmp_his")
     if dst_dir.exists():
         shutil.rmtree(dst_dir)
     dst_dir.mkdir(parents=True, exist_ok=False)
@@ -128,9 +128,14 @@ def read_dicom_image(image_path: str) -> sitk.Image:
     if not dicom_names:
         logger.error(f"No DICOM series found in directory: {image_path}")
         raise FileNotFoundError(f"No DICOM series found in directory: {image_path}")
-        
-    reader.SetFileNames(dicom_names)
-    image = reader.Execute()
+
+    #reader.SetFileNames(dicom_names)
+    #image = reader.Execute()
+
+    image = gt.read_dicom(dicom_names)
+    itk.imwrite(image, "ct_gatetools.mha")
+    image = sitk.ReadImage("ct_gatetools.mha")
+
     logger.info(f'DICOM image sucessfuly read from {image_path}')
     return image
 
